@@ -53,6 +53,11 @@
 :root[data-palette^="hc"] .utt p{background:var(--panel);border-left-width:8px}
 :root[data-palette^="hc"] .utt.old p{opacity:.85}
 :root[data-weight="bold"] body{font-weight:700}
+/* Mirror mode for a half-mirror (prompter glass): the reflection flips the screen, so we flip it back.
+   Only the main screen flips; the settings sheet stays readable on the iPad itself. */
+:root[data-flip="h"] #app{transform:scaleX(-1)}
+:root[data-flip="v"] #app{transform:scaleY(-1)}
+:root[data-flip="hv"] #app{transform:scale(-1,-1)}
 :root[data-weight="bold"] .utt p,:root[data-weight="bold"] .col-sum{font-weight:800}
 html,body{height:100%}
 [hidden]{display:none!important}
@@ -171,6 +176,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     <div class="choices" id="fontChoices" role="group" aria-label="文字の形"></div>
     <h3>文字の太さ</h3>
     <div class="choices" id="weightChoices" role="group" aria-label="文字の太さ"></div>
+    <h3>反転表示（ハーフミラーに映すとき）</h3>
+    <div class="choices" id="flipChoices" role="group" aria-label="反転表示"></div>
+    <p class="note">ハーフミラーに映した字幕を見て、文字が正しく読める向きを選んでください。iPadを手前に向けて寝かせたときは、たいてい「上下」です。この設定画面は反転しません。</p>
     <h3>画面の色</h3>
     <div class="choices" id="paletteChoices" role="group" aria-label="画面の色"></div>
     <p class="note">文字の形・太さ・画面の色は、さわるとすぐに変わり、このiPadに保存されます。</p>
@@ -532,7 +540,8 @@ JSONだけを返してください:
     { id: 'hc-yellow', name: 'くっきり 黒地に黄' }
   ];
   const WEIGHTS = [ { id: 'normal', name: 'ふつう' }, { id: 'bold', name: '太く' } ];
-  S.view = Object.assign({ font: 'zen', palette: 'auto', weight: 'normal' }, store.get('view', {}));
+  const FLIPS = [ { id: 'none', name: 'しない', t: '' }, { id: 'h', name: '左右', t: 'scaleX(-1)' }, { id: 'v', name: '上下', t: 'scaleY(-1)' }, { id: 'hv', name: '左右と上下', t: 'scale(-1,-1)' } ];
+  S.view = Object.assign({ font: 'zen', palette: 'auto', weight: 'normal', flip: 'none' }, store.get('view', {}));
 
   const loaded = new Set(['zen']);
   function loadFont(f){
@@ -548,6 +557,7 @@ JSONだけを返してください:
     root.style.setProperty('--font', fontStack(f));
     if (S.view.palette === 'auto') root.removeAttribute('data-palette'); else root.setAttribute('data-palette', S.view.palette);
     root.setAttribute('data-weight', S.view.weight);
+    if (S.view.flip === 'none') root.removeAttribute('data-flip'); else root.setAttribute('data-flip', S.view.flip);
     const bg = getComputedStyle(root).getPropertyValue('--bg').trim();
     let m = document.querySelector('meta[name="theme-color"]');
     if (!m) { m = document.createElement('meta'); m.name = 'theme-color'; document.head.append(m); }
@@ -569,6 +579,13 @@ JSONだけを返してください:
       b.innerHTML = '<span class="nm"></span><span class="smp">字幕の文字</span>';
       b.querySelector('.nm').textContent = w.name; b.querySelector('.smp').style.fontWeight = w.id === 'bold' ? 800 : 500;
       b.addEventListener('click', () => choose('weight', w.id)); $('weightChoices').append(b);
+    }
+    for (const f of FLIPS) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'choice'; b.dataset.kind = 'flip'; b.dataset.id = f.id;
+      b.innerHTML = '<span class="nm"></span><span class="smp">字幕</span>';
+      b.querySelector('.nm').textContent = f.name;
+      const smp = b.querySelector('.smp'); smp.style.display = 'inline-block'; smp.style.justifySelf = 'start'; smp.style.transform = f.t;
+      b.addEventListener('click', () => choose('flip', f.id)); $('flipChoices').append(b);
     }
     const sysDark = matchMedia('(prefers-color-scheme: dark)');
     for (const p of PALETTES) {
