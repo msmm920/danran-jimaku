@@ -11,6 +11,7 @@
   --bg:#eef1f4; --panel:#ffffff; --ink:#15202b; --ink-2:#556270; --line:#d5dbe2;
   --accent:#1f5fa8; --ask:#b86a00; --ask-bg:#fff3dc;
   --s1:#d1495b; --s2:#1b8a5a; --s3:#2f6fd0; --s4:#8a4fc4; --s5:#c26a00; --s6:#0f8a95;
+  --on-accent:#fff; --scrim:rgba(10,15,20,.45);
   --font:"Zen Kaku Gothic New","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
   --cap:1;
 }
@@ -22,14 +23,47 @@
   --bg:#10151b; --panel:#18202a; --ink:#eef2f6; --ink-2:#9aa8b6; --line:#2b3642;
   --accent:#6ea8ef; --ask:#ffb84d; --ask-bg:#3a2a10;
   --s1:#ff7b8b; --s2:#4fd394; --s3:#7fb0ff; --s4:#c49bff; --s5:#ffad5c; --s6:#4fd6df; color-scheme:dark}
+/* Palettes chosen in 設定 → 表示. They come after the light/dark rules so a chosen palette wins.
+   The same selectors also work on the preview cards in the settings sheet. */
+:root[data-palette="light"],[data-palette="light"]{
+  --bg:#eef1f4; --panel:#ffffff; --ink:#15202b; --ink-2:#556270; --line:#d5dbe2;
+  --accent:#1f5fa8; --ask:#b86a00; --ask-bg:#fff3dc; --on-accent:#fff;
+  --s1:#d1495b; --s2:#1b8a5a; --s3:#2f6fd0; --s4:#8a4fc4; --s5:#c26a00; --s6:#0f8a95; color-scheme:light}
+:root[data-palette="dark"],[data-palette="dark"]{
+  --bg:#10151b; --panel:#18202a; --ink:#eef2f6; --ink-2:#9aa8b6; --line:#2b3642;
+  --accent:#6ea8ef; --ask:#ffb84d; --ask-bg:#3a2a10; --on-accent:#0b1118;
+  --s1:#ff7b8b; --s2:#4fd394; --s3:#7fb0ff; --s4:#c49bff; --s5:#ffad5c; --s6:#4fd6df; color-scheme:dark}
+:root[data-palette="cream"],[data-palette="cream"]{
+  --bg:#efe6d2; --panel:#fffaf0; --ink:#2a2118; --ink-2:#5e5141; --line:#d9cbae;
+  --accent:#7a4a14; --ask:#a04a00; --ask-bg:#ffeccc; --on-accent:#fff;
+  --s1:#b8323f; --s2:#1d7a4c; --s3:#2a5fb4; --s4:#7a3fae; --s5:#a85400; --s6:#0c7580; color-scheme:light}
+:root[data-palette="hc-light"],[data-palette="hc-light"]{
+  --bg:#ffffff; --panel:#ffffff; --ink:#000000; --ink-2:#1a1a1a; --line:#000000;
+  --accent:#0030b0; --ask:#8a3200; --ask-bg:#fff0bf; --on-accent:#fff;
+  --s1:#b0001e; --s2:#00632a; --s3:#0038b8; --s4:#5f1a9e; --s5:#8f3d00; --s6:#005c66; color-scheme:light}
+:root[data-palette="hc-dark"],[data-palette="hc-dark"]{
+  --bg:#000000; --panel:#000000; --ink:#ffffff; --ink-2:#e6e6e6; --line:#ffffff;
+  --accent:#ffe600; --ask:#ffe600; --ask-bg:#2a2400; --on-accent:#000;
+  --s1:#ff8c98; --s2:#5ef0a0; --s3:#8cc0ff; --s4:#dcb0ff; --s5:#ffba66; --s6:#5ce8f0; color-scheme:dark}
+:root[data-palette="hc-yellow"],[data-palette="hc-yellow"]{
+  --bg:#000000; --panel:#000000; --ink:#ffe600; --ink-2:#ffffff; --line:#ffe600;
+  --accent:#ffe600; --ask:#ffffff; --ask-bg:#1f1f1f; --on-accent:#000;
+  --s1:#ff8c98; --s2:#5ef0a0; --s3:#8cc0ff; --s4:#dcb0ff; --s5:#ffba66; --s6:#5ce8f0; color-scheme:dark}
+:root[data-palette^="hc"] .col,:root[data-palette^="hc"] .btn{border-width:2.5px}
+:root[data-palette^="hc"] .utt p{background:var(--panel);border-left-width:8px}
+:root[data-palette^="hc"] .utt.old p{opacity:.85}
+:root[data-weight="bold"] body{font-weight:700}
+:root[data-weight="bold"] .utt p,:root[data-weight="bold"] .col-sum{font-weight:800}
 html,body{height:100%}
 [hidden]{display:none!important}
-body{background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:500;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:500;margin:0;--font-ui:"Hiragino Sans","Hiragino Kaku Gothic ProN",system-ui,sans-serif}
 #app{height:100%;display:grid;grid-template-rows:auto auto 1fr auto;gap:12px;box-sizing:border-box;
   padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 button{font:inherit;color:inherit;cursor:pointer}
 button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
+/* Fixed rows, so the caption board keeps the tall row even while the father banner is hidden. */
+.bar{grid-row:1}.father{grid-row:2}.board{grid-row:3}.foot{grid-row:4}
 .bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
 .brand{font-weight:900;font-size:20px;letter-spacing:.04em}
 .status{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--ink-2);min-width:0}
@@ -40,7 +74,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 @media (prefers-reduced-motion:reduce){.status.on .dot{animation:none}}
 .ctrls{margin-left:auto;display:flex;flex-wrap:wrap;gap:8px}
 .btn{border:1.5px solid var(--line);background:var(--panel);border-radius:12px;padding:10px 16px;font-size:17px;font-weight:700;min-height:48px}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .btn.quiet{font-weight:500}
 
 .father{border:3px solid var(--ask);background:var(--ask-bg);border-radius:18px;padding:14px 20px;display:grid;gap:4px;text-align:left;width:100%}
@@ -69,7 +103,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 
 .foot{font-size:13px;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:6px 16px}
 
-.sheet{position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 40%,transparent);display:grid;place-items:center;z-index:20;padding:16px}
+.sheet{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;z-index:20;padding:16px}
 .card{background:var(--panel);border-radius:18px;max-width:640px;width:100%;max-height:90%;overflow:auto;padding:22px;display:grid;gap:14px;box-sizing:border-box}
 .card h2{margin:0;font-size:22px;font-weight:900}
 .card p{margin:0;line-height:1.6;color:var(--ink-2)}
@@ -82,6 +116,16 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .recap-topic h3{margin:0 0 4px;font-size:20px}
 .recap-log{display:grid;gap:6px;font-size:17px;line-height:1.5}
 .recap-log b{color:var(--c)}
+.card h3{margin:6px 0 0;font-size:18px;font-weight:900}
+.choices{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.choice{border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:10px 12px;text-align:left;display:grid;gap:4px;min-height:56px}
+.choice[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.choice .nm{font-size:14px;font-weight:700;font-family:var(--font-ui)}
+.choice .smp{font-size:24px;line-height:1.3}
+.choice.pal{background:var(--bg);color:var(--ink);border-color:var(--line)}
+.choice.pal .smp{background:var(--panel);border-left:5px solid var(--s1);border-radius:4px 10px 10px 4px;padding:4px 8px;font-size:20px}
+.choice.pal .dots{display:flex;gap:4px}
+.choice.pal .dots i{width:14px;height:14px;border-radius:50%;background:var(--c)}
 @media (max-width:700px){.board{grid-auto-flow:row;grid-auto-rows:minmax(240px,1fr)}.father .txt{font-size:calc(30px * var(--cap))}}
 </style>
 
@@ -123,6 +167,14 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 <div id="sheetSettings" class="sheet" hidden>
   <div class="card" role="dialog" aria-labelledby="setTitle">
     <h2 id="setTitle">設定</h2>
+    <h3>文字の形（フォント）</h3>
+    <div class="choices" id="fontChoices" role="group" aria-label="文字の形"></div>
+    <h3>文字の太さ</h3>
+    <div class="choices" id="weightChoices" role="group" aria-label="文字の太さ"></div>
+    <h3>画面の色</h3>
+    <div class="choices" id="paletteChoices" role="group" aria-label="画面の色"></div>
+    <p class="note">文字の形・太さ・画面の色は、さわるとすぐに変わり、このiPadに保存されます。</p>
+    <h3>音声認識とAI要約</h3>
     <p id="frameNote" class="note" hidden>このページはClaudeの中で開いているため、マイクとインターネット接続が使えません。「見本を再生」で画面の動きを確かめられます。実際の会話で使うときは、公開用のアドレスで開いてください。</p>
     <div class="field"><label for="azKey">音声認識のキー（Azure Speech）</label><input id="azKey" type="password" autocomplete="off" placeholder="入れると、話した人を聞き分けます"></div>
     <div class="field"><label for="azRegion">音声認識の地域</label><input id="azRegion" type="text" autocomplete="off" placeholder="japaneast"></div>
@@ -431,7 +483,7 @@ JSONだけを返してください:
   // ---------- settings ----------
   $('btnSettings').addEventListener('click', () => {
     $('azKey').value = S.cfg.azKey; $('azRegion').value = S.cfg.azRegion; $('clKey').value = S.cfg.clKey; $('family').value = S.cfg.family;
-    $('frameNote').hidden = !inFrame; $('sheetSettings').hidden = false;
+    $('frameNote').hidden = !inFrame; buildChoices(); applyView(); $('sheetSettings').hidden = false;
   });
   $('setSave').addEventListener('click', () => {
     S.cfg = { azKey: $('azKey').value.trim(), azRegion: $('azRegion').value.trim() || 'japaneast', clKey: $('clKey').value.trim(), family: $('family').value.trim() || '父、母、息子、娘、孫' };
@@ -459,6 +511,76 @@ JSONだけを返してください:
     $('sheetRecap').hidden = false;
   });
   $('recapClose').addEventListener('click', () => { $('sheetRecap').hidden = true; });
+
+  // ---------- display: font, weight, palette (saved on this device) ----------
+  const GF = 'https://fonts.googleapis.com/css2?display=swap&family=';
+  const FONTS = [
+    { id: 'zen',     name: 'いまの字体',           stack: '"Zen Kaku Gothic New"', css: 'Zen+Kaku+Gothic+New:wght@500;700;900' },
+    { id: 'bizud',   name: 'UDゴシック（読みやすさ重視）', stack: '"BIZ UDPGothic"', css: 'BIZ+UDPGothic:wght@400;700' },
+    { id: 'maru',    name: '丸ゴシック',           stack: '"M PLUS Rounded 1c"', css: 'M+PLUS+Rounded+1c:wght@500;700;900' },
+    { id: 'mincho',  name: 'UD明朝',               stack: '"BIZ UDPMincho"', css: 'BIZ+UDPMincho:wght@400;700' },
+    { id: 'system',  name: 'iPadの標準（ヒラギノ）', stack: '' }
+  ];
+  const FALLBACK = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif';
+  const PALETTES = [
+    { id: 'auto',      name: '自動（iPadの明るさ設定に合わせる）' },
+    { id: 'light',     name: '明るい' },
+    { id: 'dark',      name: '暗い' },
+    { id: 'cream',     name: 'クリーム（まぶしさ控えめ）' },
+    { id: 'hc-light',  name: 'くっきり 白地に黒' },
+    { id: 'hc-dark',   name: 'くっきり 黒地に白' },
+    { id: 'hc-yellow', name: 'くっきり 黒地に黄' }
+  ];
+  const WEIGHTS = [ { id: 'normal', name: 'ふつう' }, { id: 'bold', name: '太く' } ];
+  S.view = Object.assign({ font: 'zen', palette: 'auto', weight: 'normal' }, store.get('view', {}));
+
+  const loaded = new Set(['zen']);
+  function loadFont(f){
+    if (!f.css || loaded.has(f.id)) return;
+    loaded.add(f.id);
+    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = GF + f.css; document.head.append(l);
+  }
+  const fontStack = f => (f.stack ? f.stack + ',' : '') + FALLBACK;
+  function applyView(){
+    const root = document.documentElement;
+    const f = FONTS.find(x => x.id === S.view.font) || FONTS[0];
+    loadFont(f);
+    root.style.setProperty('--font', fontStack(f));
+    if (S.view.palette === 'auto') root.removeAttribute('data-palette'); else root.setAttribute('data-palette', S.view.palette);
+    root.setAttribute('data-weight', S.view.weight);
+    const bg = getComputedStyle(root).getPropertyValue('--bg').trim();
+    let m = document.querySelector('meta[name="theme-color"]');
+    if (!m) { m = document.createElement('meta'); m.name = 'theme-color'; document.head.append(m); }
+    m.content = bg;
+    for (const b of document.querySelectorAll('.choice')) b.setAttribute('aria-pressed', String(S.view[b.dataset.kind] === b.dataset.id));
+  }
+  function choose(kind, id){ S.view[kind] = id; store.set('view', S.view); applyView(); }
+  function buildChoices(){
+    if (buildChoices.done) return; buildChoices.done = true;
+    FONTS.forEach(loadFont);
+    for (const f of FONTS) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'choice'; b.dataset.kind = 'font'; b.dataset.id = f.id;
+      b.innerHTML = '<span class="nm"></span><span class="smp">伊香保の温泉</span>';
+      b.querySelector('.nm').textContent = f.name; b.querySelector('.smp').style.fontFamily = fontStack(f);
+      b.addEventListener('click', () => choose('font', f.id)); $('fontChoices').append(b);
+    }
+    for (const w of WEIGHTS) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'choice'; b.dataset.kind = 'weight'; b.dataset.id = w.id;
+      b.innerHTML = '<span class="nm"></span><span class="smp">字幕の文字</span>';
+      b.querySelector('.nm').textContent = w.name; b.querySelector('.smp').style.fontWeight = w.id === 'bold' ? 800 : 500;
+      b.addEventListener('click', () => choose('weight', w.id)); $('weightChoices').append(b);
+    }
+    const sysDark = matchMedia('(prefers-color-scheme: dark)');
+    for (const p of PALETTES) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'choice pal'; b.dataset.kind = 'palette'; b.dataset.id = p.id;
+      b.setAttribute('data-palette', p.id === 'auto' ? (sysDark.matches ? 'dark' : 'light') : p.id);
+      b.innerHTML = '<span class="nm"></span><span class="smp">こんにちは</span><span class="dots"><i style="--c:var(--s1)"></i><i style="--c:var(--s2)"></i><i style="--c:var(--s3)"></i><i style="--c:var(--s4)"></i><i style="--c:var(--ask)"></i></span>';
+      b.querySelector('.nm').textContent = p.name;
+      b.addEventListener('click', () => choose('palette', p.id)); $('paletteChoices').append(b);
+    }
+    sysDark.addEventListener?.('change', e => { const a = document.querySelector('.choice.pal[data-id="auto"]'); if (a) a.setAttribute('data-palette', e.matches ? 'dark' : 'light'); applyView(); });
+  }
+  applyView();
 
   // ---------- text size ----------
   function setCap(v){ S.cap = Math.max(0.7, Math.min(1.8, Math.round(v * 10) / 10)); document.documentElement.style.setProperty('--cap', S.cap); store.set('cap', S.cap); }
