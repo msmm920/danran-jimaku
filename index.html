@@ -1,0 +1,472 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<title>団らん字幕</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap">
+<style>
+/* Layout: one screen. Thin control bar, a father banner when someone asks him something,
+   then one column per conversation thread (or one big caption column when only two people talk). */
+:root{
+  --bg:#eef1f4; --panel:#ffffff; --ink:#15202b; --ink-2:#556270; --line:#d5dbe2;
+  --accent:#1f5fa8; --ask:#b86a00; --ask-bg:#fff3dc;
+  --s1:#d1495b; --s2:#1b8a5a; --s3:#2f6fd0; --s4:#8a4fc4; --s5:#c26a00; --s6:#0f8a95;
+  --font:"Zen Kaku Gothic New","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
+  --cap:1;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10151b; --panel:#18202a; --ink:#eef2f6; --ink-2:#9aa8b6; --line:#2b3642;
+  --accent:#6ea8ef; --ask:#ffb84d; --ask-bg:#3a2a10;
+  --s1:#ff7b8b; --s2:#4fd394; --s3:#7fb0ff; --s4:#c49bff; --s5:#ffad5c; --s6:#4fd6df; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10151b; --panel:#18202a; --ink:#eef2f6; --ink-2:#9aa8b6; --line:#2b3642;
+  --accent:#6ea8ef; --ask:#ffb84d; --ask-bg:#3a2a10;
+  --s1:#ff7b8b; --s2:#4fd394; --s3:#7fb0ff; --s4:#c49bff; --s5:#ffad5c; --s6:#4fd6df; color-scheme:dark}
+html,body{height:100%}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:500;margin:0}
+#app{height:100%;display:grid;grid-template-rows:auto auto 1fr auto;gap:12px;box-sizing:border-box;
+  padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.brand{font-weight:900;font-size:20px;letter-spacing:.04em}
+.status{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--ink-2);min-width:0}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--line);flex:none}
+.status.on .dot{background:var(--s2);animation:pulse 1.6s infinite}
+.status.err .dot{background:var(--s1)}
+@keyframes pulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.status.on .dot{animation:none}}
+.ctrls{margin-left:auto;display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1.5px solid var(--line);background:var(--panel);border-radius:12px;padding:10px 16px;font-size:17px;font-weight:700;min-height:48px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.quiet{font-weight:500}
+
+.father{border:3px solid var(--ask);background:var(--ask-bg);border-radius:18px;padding:14px 20px;display:grid;gap:4px;text-align:left;width:100%}
+.father .lab{font-size:calc(17px * var(--cap));font-weight:700;color:var(--ask)}
+.father .txt{font-size:calc(40px * var(--cap));font-weight:900;line-height:1.3;text-wrap:balance}
+.father .hint{font-size:14px;color:var(--ink-2)}
+
+.board{display:grid;gap:12px;min-height:0;grid-auto-columns:minmax(0,1fr);grid-auto-flow:column}
+.col{background:var(--panel);border:1.5px solid var(--line);border-radius:18px;display:grid;grid-template-rows:auto 1fr;min-height:0;min-width:0;overflow:hidden}
+.col-head{padding:14px 18px 12px;border-bottom:1.5px solid var(--line);display:grid;gap:6px}
+.col-kicker{font-size:13px;letter-spacing:.08em;color:var(--ink-2)}
+.col-title{font-size:calc(28px * var(--cap));font-weight:900;line-height:1.25;text-wrap:balance}
+.col-sum{font-size:calc(20px * var(--cap));line-height:1.45;color:var(--ink)}
+.col-who{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:14px;font-weight:700;padding:2px 10px;border-radius:999px;color:var(--c);border:1.5px solid var(--c)}
+.utts{display:flex;flex-direction:column;justify-content:flex-end;gap:12px;padding:14px 18px;min-height:0;overflow:hidden}
+.utt{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start}
+.who{border:none;background:var(--c);color:var(--panel);font-weight:900;font-size:calc(17px * var(--cap));padding:6px 10px;border-radius:10px;white-space:nowrap;min-height:40px}
+.utt p{margin:0;font-size:calc(28px * var(--cap));line-height:1.45;min-width:0;overflow-wrap:anywhere;
+  background:color-mix(in srgb,var(--c) 10%,var(--panel));border-left:5px solid var(--c);border-radius:4px 14px 14px 4px;padding:8px 14px}
+.utt.old p{opacity:.6}
+.utt.interim p{border-left-style:dashed;color:var(--ink-2)}
+.board.simple .utt p{font-size:calc(36px * var(--cap))}
+.empty{align-self:center;justify-self:center;max-width:34em;text-align:center;color:var(--ink-2);font-size:18px;line-height:1.7;padding:24px}
+.empty b{color:var(--ink)}
+
+.foot{font-size:13px;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:6px 16px}
+
+.sheet{position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 40%,transparent);display:grid;place-items:center;z-index:20;padding:16px}
+.card{background:var(--panel);border-radius:18px;max-width:640px;width:100%;max-height:90%;overflow:auto;padding:22px;display:grid;gap:14px;box-sizing:border-box}
+.card h2{margin:0;font-size:22px;font-weight:900}
+.card p{margin:0;line-height:1.6;color:var(--ink-2)}
+.field{display:grid;gap:6px}
+.field label{font-weight:700}
+.field input{font:inherit;font-size:17px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);min-width:0}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.note{font-size:14px;background:var(--bg);border-radius:10px;padding:10px 12px;line-height:1.6}
+.recap-topic{border-left:5px solid var(--accent);padding:4px 12px}
+.recap-topic h3{margin:0 0 4px;font-size:20px}
+.recap-log{display:grid;gap:6px;font-size:17px;line-height:1.5}
+.recap-log b{color:var(--c)}
+@media (max-width:700px){.board{grid-auto-flow:row;grid-auto-rows:minmax(240px,1fr)}.father .txt{font-size:calc(30px * var(--cap))}}
+</style>
+
+<div id="app">
+  <header class="bar">
+    <div class="brand">団らん字幕</div>
+    <div id="status" class="status"><span class="dot"></span><span id="statusText">とまっています</span></div>
+    <div class="ctrls">
+      <button id="btnStart" class="btn primary" type="button">はじめる</button>
+      <button id="btnDemo" class="btn" type="button">見本を再生</button>
+      <button id="btnRecap" class="btn" type="button">ここまでの話</button>
+      <button id="btnSmaller" class="btn quiet" type="button" aria-label="文字を小さく">文字 小</button>
+      <button id="btnLarger" class="btn quiet" type="button" aria-label="文字を大きく">文字 大</button>
+      <button id="btnSettings" class="btn quiet" type="button">設定</button>
+    </div>
+  </header>
+
+  <button id="father" class="father" type="button" hidden>
+    <span class="lab" id="fatherLab">お父さんへ</span>
+    <span class="txt" id="fatherTxt"></span>
+    <span class="hint">さわると消えます</span>
+  </button>
+
+  <main id="board" class="board" aria-live="polite"></main>
+
+  <div class="foot"><span id="footMode"></span><span>名前の札をさわると、その人の名前を変えられます</span></div>
+</div>
+
+<div id="sheetName" class="sheet" hidden>
+  <div class="card" role="dialog" aria-labelledby="nameTitle">
+    <h2 id="nameTitle">この人はだれですか</h2>
+    <p id="nameNow"></p>
+    <div class="row" id="nameQuick"></div>
+    <div class="field"><label for="nameInput">名前を入力</label><input id="nameInput" type="text" autocomplete="off"></div>
+    <div class="row"><button id="nameSave" class="btn primary" type="button">決める</button><button id="nameCancel" class="btn" type="button">やめる</button></div>
+  </div>
+</div>
+
+<div id="sheetSettings" class="sheet" hidden>
+  <div class="card" role="dialog" aria-labelledby="setTitle">
+    <h2 id="setTitle">設定</h2>
+    <p id="frameNote" class="note" hidden>このページはClaudeの中で開いているため、マイクとインターネット接続が使えません。「見本を再生」で画面の動きを確かめられます。実際の会話で使うときは、公開用のアドレスで開いてください。</p>
+    <div class="field"><label for="azKey">音声認識のキー（Azure Speech）</label><input id="azKey" type="password" autocomplete="off" placeholder="入れると、話した人を聞き分けます"></div>
+    <div class="field"><label for="azRegion">音声認識の地域</label><input id="azRegion" type="text" autocomplete="off" placeholder="japaneast"></div>
+    <div class="field"><label for="clKey">AI要約のキー（Claude API）</label><input id="clKey" type="password" autocomplete="off" placeholder="入れると、話題ごとに分けて要約します"></div>
+    <div class="field"><label for="family">家族の名前（読点区切り）</label><input id="family" type="text" autocomplete="off" placeholder="父、母、息子、娘、孫"></div>
+    <p class="note">キーはこのiPadの中だけに保存され、ほかの人には送られません。音声認識のキーがないときは、iPadに内蔵の文字起こしを使います（話した人の聞き分けはできません）。</p>
+    <div class="row"><button id="setSave" class="btn primary" type="button">保存する</button><button id="setCancel" class="btn" type="button">閉じる</button></div>
+  </div>
+</div>
+
+<div id="sheetRecap" class="sheet" hidden>
+  <div class="card" role="dialog" aria-labelledby="recapTitle">
+    <h2 id="recapTitle">ここまでの話</h2>
+    <div id="recapBody" style="display:grid;gap:14px"></div>
+    <div class="row"><button id="recapClose" class="btn primary" type="button">閉じる</button></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const store = {
+    get(k, d){ try { const v = localStorage.getItem('danran.' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v){ try { localStorage.setItem('danran.' + k, JSON.stringify(v)); } catch {} }
+  };
+  const inFrame = (() => { try { return window.self !== window.top; } catch { return true; } })();
+
+  const S = {
+    utts: [], topics: [], speakers: {}, nextColor: 0, interim: null,
+    toFather: null, handledAsk: new Set(), mode: 'idle', analyzing: false, lastAnalyzedId: 0, uid: 0,
+    cap: store.get('cap', 1),
+    cfg: Object.assign({ azKey: '', azRegion: 'japaneast', clKey: '', family: '父、母、息子、娘、孫' }, store.get('cfg', {}))
+  };
+  document.documentElement.style.setProperty('--cap', S.cap);
+
+  // ---------- speakers ----------
+  function speaker(id){
+    if (!S.speakers[id]) {
+      const n = Object.keys(S.speakers).length + 1;
+      S.speakers[id] = { name: id === 'all' ? '会話' : '話者' + n, color: (S.nextColor++ % 6) + 1 };
+    }
+    return S.speakers[id];
+  }
+  const colorOf = id => `var(--s${speaker(id).color})`;
+
+  // ---------- data in ----------
+  function addFinal(spk, text, extra = {}){
+    text = (text || '').trim(); if (!text) return;
+    S.interim = null;
+    const prev = S.utts.filter(u => u.spk === spk).at(-1);
+    const u = { id: ++S.uid, spk, text, ts: Date.now(), topic: extra.topic ?? (prev ? prev.topic : (S.topics[0]?.key ?? null)) };
+    S.utts.push(u);
+    if (S.utts.length > 400) S.utts.shift();
+    render();
+    return u;
+  }
+  function setInterim(spk, text){ S.interim = text ? { spk, text } : null; render(); }
+
+  // ---------- rendering ----------
+  function activeSpeakers(){
+    const since = Date.now() - 3 * 60 * 1000;
+    return new Set(S.utts.filter(u => u.ts > since).map(u => u.spk)).size;
+  }
+  function uttEl(u, cls = ''){
+    const d = document.createElement('div'); d.className = 'utt ' + cls; d.style.setProperty('--c', colorOf(u.spk));
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'who'; b.textContent = speaker(u.spk).name;
+    b.addEventListener('click', () => openName(u.spk));
+    const p = document.createElement('p'); p.textContent = u.text;
+    d.append(b, p); return d;
+  }
+  function render(){
+    const board = $('board'); board.replaceChildren();
+    const simple = activeSpeakers() <= 2 || S.topics.length === 0;
+    board.classList.toggle('simple', simple);
+    $('footMode').textContent = simple ? '表示：かんたん（字幕だけ）' : `表示：話題ごと（${S.topics.length}つの話）`;
+
+    if (!S.utts.length && !S.interim) {
+      const e = document.createElement('div'); e.className = 'col';
+      e.innerHTML = '<div class="empty"><b>「はじめる」</b>を押すと、会話が大きな字幕で出ます。<br>家族が何人かで話すと、話題ごとに欄が分かれます。<br>動きを見るには<b>「見本を再生」</b>を押してください。</div>';
+      board.append(e); return;
+    }
+    const cols = simple ? [{ key: '*', title: S.topics.length === 1 ? S.topics[0].title : '', summary: S.topics.length === 1 ? S.topics[0].summary : '' }] : S.topics;
+    const keys = new Set(S.topics.map(t => t.key));
+    for (const t of cols) {
+      const col = document.createElement('section'); col.className = 'col';
+      const head = document.createElement('div'); head.className = 'col-head';
+      const mine = S.utts.filter(u => t.key === '*' || u.topic === t.key || (!keys.has(u.topic) && t === cols[0]));
+      if (t.title) {
+        const k = document.createElement('div'); k.className = 'col-kicker'; k.textContent = simple ? 'いまの話題' : '話題';
+        const h = document.createElement('div'); h.className = 'col-title'; h.textContent = t.title;
+        head.append(k, h);
+        if (t.summary) { const s = document.createElement('div'); s.className = 'col-sum'; s.textContent = t.summary; head.append(s); }
+        const who = document.createElement('div'); who.className = 'col-who';
+        for (const id of new Set(mine.slice(-8).map(u => u.spk))) {
+          const g = document.createElement('span'); g.className = 'tag'; g.style.setProperty('--c', colorOf(id)); g.textContent = speaker(id).name; who.append(g);
+        }
+        head.append(who);
+      } else head.hidden = true;
+      const list = document.createElement('div'); list.className = 'utts';
+      const show = mine.slice(simple ? -5 : -4);
+      show.forEach((u, i) => list.append(uttEl(u, i < show.length - 2 ? 'old' : '')));
+      if (S.interim && (t === cols[0] || mine.at(-1)?.spk === S.interim.spk)) {
+        const last = S.utts.filter(u => u.spk === S.interim.spk).at(-1);
+        if (t.key === '*' || !last || last.topic === t.key || (t === cols[0] && !keys.has(last?.topic))) {
+          list.append(uttEl({ spk: S.interim.spk, text: S.interim.text }, 'interim'));
+        }
+      }
+      col.append(head, list); board.append(col);
+    }
+  }
+  function showFather(text, fromSpk){
+    S.toFather = { text, ts: Date.now() };
+    $('fatherLab').textContent = fromSpk ? `お父さんへ（${speaker(fromSpk).name}より）` : 'お父さんへ';
+    $('fatherTxt').textContent = text;
+    $('father').hidden = false;
+    clearTimeout(showFather.t); showFather.t = setTimeout(() => { $('father').hidden = true; }, 60000);
+  }
+  $('father').addEventListener('click', () => { $('father').hidden = true; });
+
+  function setStatus(text, kind){ $('statusText').textContent = text; $('status').className = 'status ' + (kind || ''); }
+
+  // ---------- AI: split into threads + summarise + find questions to father ----------
+  async function analyze(){
+    if (S.analyzing || !S.cfg.clKey || S.mode === 'demo') return;
+    const recent = S.utts.slice(-40);
+    if (!recent.length || recent.at(-1).id === S.lastAnalyzedId) return;
+    S.analyzing = true;
+    const lines = recent.map(u => `[u${u.id}] ${speaker(u.spk).name}: ${u.text}`).join('\n');
+    const prev = JSON.stringify(S.topics.map(t => ({ key: t.key, title: t.title })));
+    const prompt = `あなたは、耳がまったく聞こえない85歳の父のために、家族の会話を整理する係です。
+下は家族の会話の文字起こしです（新しいものが下。音声認識の誤りを含みます）。何人かが同時に別々の話をしていることがあります。
+
+やること:
+1. 発言を話題ごとに分け、最大3つの話題にまとめる。止まった話題は入れない。前回の話題が続いていれば同じkeyを使う。
+2. 各話題に、父が一目で分かる短い見出し（15字以内）と、いまの状況の要約（40字以内、やさしい言葉）を付ける。
+3. 父に向けた問いかけ（「お父さん」「おじいちゃん」と呼びかける、父の答えを求めている）があれば、最新の1つを短く言い直す。すでに扱ったID ${JSON.stringify([...S.handledAsk])} は除く。なければ null。
+
+前回の話題: ${prev}
+
+会話:
+${lines}
+
+JSONだけを返してください:
+{"topics":[{"key":"t1","title":"…","summary":"…"}],"assign":{"u12":"t1"},"to_father":{"id":"u15","text":"…"}}`;
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-api-key': S.cfg.clKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({ model: 'claude-haiku-5-5', max_tokens: 900, messages: [{ role: 'user', content: prompt }] })
+      });
+      if (!res.ok) throw new Error('AI ' + res.status);
+      const data = await res.json();
+      const txt = (data.content || []).map(c => c.text || '').join('');
+      const j = JSON.parse(txt.slice(txt.indexOf('{'), txt.lastIndexOf('}') + 1));
+      S.lastAnalyzedId = recent.at(-1).id;
+      if (Array.isArray(j.topics)) S.topics = j.topics.slice(0, 3).filter(t => t && t.key).map(t => ({ key: String(t.key), title: String(t.title || ''), summary: String(t.summary || '') }));
+      if (j.assign) for (const [k, v] of Object.entries(j.assign)) { const u = S.utts.find(x => 'u' + x.id === k); if (u) u.topic = String(v); }
+      if (j.to_father && j.to_father.id && !S.handledAsk.has(j.to_father.id)) {
+        S.handledAsk.add(j.to_father.id);
+        const u = S.utts.find(x => 'u' + x.id === j.to_father.id);
+        showFather(String(j.to_father.text || u?.text || ''), u?.spk);
+      }
+      render();
+    } catch (e) {
+      console.warn(e);
+      if (S.mode === 'live') setStatus('聞いています（AI要約が止まっています）', 'on');
+    } finally { S.analyzing = false; }
+  }
+  setInterval(analyze, 12000);
+
+  // ---------- speech: Azure (with speaker separation) or Safari built-in ----------
+  let engine = null, wakeLock = null;
+  function loadAzure(){
+    if (window.SpeechSDK) return Promise.resolve();
+    return new Promise((ok, ng) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@1.52.0/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js';
+      s.onload = ok; s.onerror = () => ng(new Error('音声認識の部品を読み込めませんでした'));
+      document.head.append(s);
+    });
+  }
+  async function startAzure(){
+    await loadAzure();
+    const SDK = window.SpeechSDK;
+    const cfg = SDK.SpeechConfig.fromSubscription(S.cfg.azKey, S.cfg.azRegion || 'japaneast');
+    cfg.speechRecognitionLanguage = 'ja-JP';
+    cfg.setProperty(SDK.PropertyId.SpeechServiceResponse_DiarizeIntermediateResults, 'true');
+    const tr = new SDK.ConversationTranscriber(cfg, SDK.AudioConfig.fromDefaultMicrophoneInput());
+    const sid = id => (!id || id === 'Unknown') ? (S.interim?.spk || 'unknown') : id;
+    tr.transcribing = (_, e) => setInterim(sid(e.result.speakerId), e.result.text);
+    tr.transcribed = (_, e) => { if (e.result.reason === SDK.ResultReason.RecognizedSpeech) addFinal(sid(e.result.speakerId), e.result.text); };
+    tr.canceled = (_, e) => { setStatus('止まりました：' + (e.errorDetails || '接続が切れました'), 'err'); S.mode = 'idle'; $('btnStart').textContent = 'はじめる'; };
+    await new Promise((ok, ng) => tr.startTranscribingAsync(ok, err => ng(new Error(err))));
+    engine = { stop: () => new Promise(ok => tr.stopTranscribingAsync(() => { tr.close(); ok(); }, () => ok())) };
+    setStatus('聞いています（話した人を聞き分けます）', 'on');
+  }
+  function startBuiltin(){
+    const R = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!R) throw new Error('このブラウザでは文字起こしが使えません');
+    const r = new R(); r.lang = 'ja-JP'; r.continuous = true; r.interimResults = true;
+    let on = true;
+    r.onresult = e => {
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) addFinal('all', t); else setInterim('all', t);
+      }
+    };
+    r.onerror = e => { if (e.error === 'not-allowed') { on = false; setStatus('マイクが許可されていません', 'err'); } };
+    r.onend = () => { if (on) try { r.start(); } catch {} };
+    r.start();
+    engine = { stop: async () => { on = false; r.stop(); } };
+    setStatus('聞いています（iPad内蔵・聞き分けなし）', 'on');
+  }
+  async function start(){
+    if (S.mode === 'demo') stopDemo();
+    S.mode = 'live'; $('btnStart').textContent = 'とめる';
+    setStatus('準備しています…', '');
+    try {
+      if (S.cfg.azKey) await startAzure(); else startBuiltin();
+      try { wakeLock = await navigator.wakeLock?.request('screen'); } catch {}
+    } catch (e) {
+      S.mode = 'idle'; $('btnStart').textContent = 'はじめる';
+      setStatus(inFrame ? 'このページではマイクが使えません（設定を参照）' : e.message, 'err');
+    }
+  }
+  async function stop(){
+    S.mode = 'idle'; $('btnStart').textContent = 'はじめる';
+    try { await engine?.stop(); } catch {}
+    engine = null; S.interim = null;
+    try { await wakeLock?.release(); } catch {}
+    setStatus('とまっています', ''); render();
+  }
+  $('btnStart').addEventListener('click', () => S.mode === 'live' ? stop() : start());
+
+  // ---------- demo: a 4-person conversation with two threads at once ----------
+  const DEMO_PEOPLE = { son: ['息子', 3], mom: ['母', 2], dau: ['娘', 1], kid: ['孫', 4], dad: ['父', 6] };
+  const TOPIC_A = { key: 'A', title: '来月の温泉旅行', summary: '' };
+  const TOPIC_B = { key: 'B', title: '孫のサッカーの試合', summary: '' };
+  const DEMO = [
+    ['son', 'A', '来月、みんなで温泉に行かない？'],
+    ['mom', 'A', 'いいわね。どこにするの？'],
+    ['dau', 'B', 'そういえば、この前の日曜はサッカーの試合だったのよ'],
+    ['son', 'A', '箱根なら車で2時間くらいだよ', { sumA: 'どこの温泉に行くか相談中。箱根の案が出た' }],
+    ['kid', 'B', 'ぼく、ゴール決めたんだよ'],
+    ['mom', 'A', '去年も箱根だったわね。伊香保はどう？', { sumA: '箱根か伊香保か、行き先を相談中' }],
+    ['dau', 'B', '後半の最後に決めて、逆転勝ちだったの', { sumB: '孫がゴールを決めて、試合に逆転勝ち' }],
+    ['kid', 'B', '次は県大会なんだ'],
+    ['son', 'A', '伊香保もいいね。お父さんは、どこの温泉がいい？', { ask: '温泉は、箱根と伊香保のどちらがいい？' }],
+    ['dad', 'A', '伊香保がいいな。石段の街が好きなんだ'],
+    ['mom', 'A', 'じゃあ伊香保にしましょう', { sumA: '旅行の行き先は伊香保に決まりそう。父も賛成' }],
+    ['dau', 'B', '県大会、みんなで応援に行こうか', { sumB: '次は県大会。みんなで応援に行く相談' }],
+    ['kid', 'B', 'おじいちゃんも見に来てね', { ask: '県大会の応援に見に来てね' }]
+  ];
+  let demoTimers = [];
+  function stopDemo(){ demoTimers.forEach(clearTimeout); demoTimers = []; if (S.mode === 'demo') { S.mode = 'idle'; setStatus('とまっています', ''); $('btnDemo').textContent = '見本を再生'; } }
+  function playDemo(){
+    if (S.mode === 'live') return;
+    if (S.mode === 'demo') { stopDemo(); return; }
+    S.utts = []; S.topics = []; S.speakers = {}; S.interim = null; $('father').hidden = true;
+    for (const [id, [name, c]] of Object.entries(DEMO_PEOPLE)) S.speakers['demo-' + id] = { name, color: c };
+    S.mode = 'demo'; setStatus('見本を再生中（実際の会話ではありません）', 'on'); $('btnDemo').textContent = '見本をとめる';
+    const A = { ...TOPIC_A }, B = { ...TOPIC_B };
+    let t = 400;
+    DEMO.forEach(([who, topic, text, x = {}], i) => {
+      const spk = 'demo-' + who;
+      const words = [...text];
+      const typing = Math.min(1600, words.length * 70);
+      demoTimers.push(setTimeout(() => {
+        let k = 0;
+        const step = () => { k += 3; if (k < words.length) { setInterim(spk, words.slice(0, k).join('')); demoTimers.push(setTimeout(step, 120)); } };
+        step();
+      }, t));
+      t += typing;
+      demoTimers.push(setTimeout(() => {
+        addFinal(spk, text, { topic });
+        if (i === 2 && !S.topics.includes(A)) S.topics = [A];
+        if (i === 4) S.topics = [A, B];
+        if (x.sumA) A.summary = x.sumA;
+        if (x.sumB) B.summary = x.sumB;
+        if (x.ask) showFather(x.ask, spk);
+        render();
+        if (i === DEMO.length - 1) demoTimers.push(setTimeout(() => { if (S.mode === 'demo') { S.mode = 'idle'; setStatus('見本が終わりました', ''); $('btnDemo').textContent = '見本を再生'; } }, 1500));
+      }, t));
+      t += 1500;
+    });
+  }
+  $('btnDemo').addEventListener('click', playDemo);
+
+  // ---------- naming speakers ----------
+  let naming = null;
+  function openName(spk){
+    naming = spk;
+    $('nameNow').textContent = `いまの名前：${speaker(spk).name}`;
+    const q = $('nameQuick'); q.replaceChildren();
+    for (const n of S.cfg.family.split(/[、,，\s]+/).filter(Boolean)) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = n;
+      b.addEventListener('click', () => { saveName(n); }); q.append(b);
+    }
+    $('nameInput').value = '';
+    $('sheetName').hidden = false;
+  }
+  function saveName(n){ if (naming && n.trim()) speaker(naming).name = n.trim(); $('sheetName').hidden = true; naming = null; render(); }
+  $('nameSave').addEventListener('click', () => saveName($('nameInput').value));
+  $('nameCancel').addEventListener('click', () => { $('sheetName').hidden = true; });
+
+  // ---------- settings ----------
+  $('btnSettings').addEventListener('click', () => {
+    $('azKey').value = S.cfg.azKey; $('azRegion').value = S.cfg.azRegion; $('clKey').value = S.cfg.clKey; $('family').value = S.cfg.family;
+    $('frameNote').hidden = !inFrame; $('sheetSettings').hidden = false;
+  });
+  $('setSave').addEventListener('click', () => {
+    S.cfg = { azKey: $('azKey').value.trim(), azRegion: $('azRegion').value.trim() || 'japaneast', clKey: $('clKey').value.trim(), family: $('family').value.trim() || '父、母、息子、娘、孫' };
+    store.set('cfg', S.cfg); $('sheetSettings').hidden = true;
+  });
+  $('setCancel').addEventListener('click', () => { $('sheetSettings').hidden = true; });
+
+  // ---------- recap ----------
+  $('btnRecap').addEventListener('click', () => {
+    const body = $('recapBody'); body.replaceChildren();
+    if (!S.utts.length) { const p = document.createElement('p'); p.textContent = 'まだ会話がありません。'; body.append(p); }
+    for (const t of S.topics) {
+      const d = document.createElement('div'); d.className = 'recap-topic';
+      const h = document.createElement('h3'); h.textContent = t.title;
+      const p = document.createElement('p'); p.textContent = t.summary || '';
+      d.append(h, p); body.append(d);
+    }
+    const log = document.createElement('div'); log.className = 'recap-log';
+    for (const u of S.utts.slice(-60)) {
+      const r = document.createElement('div'); r.style.setProperty('--c', colorOf(u.spk));
+      const b = document.createElement('b'); b.textContent = speaker(u.spk).name + '：';
+      r.append(b, document.createTextNode(u.text)); log.append(r);
+    }
+    if (S.utts.length) body.append(log);
+    $('sheetRecap').hidden = false;
+  });
+  $('recapClose').addEventListener('click', () => { $('sheetRecap').hidden = true; });
+
+  // ---------- text size ----------
+  function setCap(v){ S.cap = Math.max(0.7, Math.min(1.8, Math.round(v * 10) / 10)); document.documentElement.style.setProperty('--cap', S.cap); store.set('cap', S.cap); }
+  $('btnSmaller').addEventListener('click', () => setCap(S.cap - 0.1));
+  $('btnLarger').addEventListener('click', () => setCap(S.cap + 0.1));
+
+  render();
+})();
+</script>
+
+</body></html>
